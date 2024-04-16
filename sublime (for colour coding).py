@@ -6,6 +6,7 @@ import turtle
 plist = []
 vlist = []
 blist = []
+clist = []
 coordlist = []
 
 #functions to use for drawing
@@ -105,8 +106,12 @@ while True:
                         break
                     else:
                         print("Invalid input try again.")
-                print(blist, vlist)
                 polygondraw(blist, vlist)
+                clist = vlist
+                blist.clear()
+                vlist.clear()
+
+
                 
 
                 
