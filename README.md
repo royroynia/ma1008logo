@@ -1,0 +1,1 @@
+I will provide the data file in the above as TXT. Goal is to import txt file, read the coordinates from it and draw out the shape. Also allowing for transforming of shape, rotating and skewing. Homogenous coordinates system may be used for bonus (but im too trash so i dont think i can do it)
