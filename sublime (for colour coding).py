@@ -17,7 +17,6 @@ def drawLine(v1,v2,colorfill):
     turtle.goto(v1)
     turtle.pendown()
     turtle.goto(v2)
-    turtle.fillcolor(colorfill)
     turtle.penup()
 
 def drawBezierCurve (v1, v2, v3, v4,colorfill):
@@ -29,12 +28,13 @@ def drawBezierCurve (v1, v2, v3, v4,colorfill):
         turtle.speed(0)
         turtle.goto(x, y)
         if i == 0: turtle.pendown()
-    turtle.fillcolor(colorfill)
 
 def polygondraw (blist, vlist):
     a = 0
     while True:
         colorfill = input("Enter the colour for the polygon: ")
+        turtle.fillcolor(colorfill)
+        turtle.begin_fill(colorfill)
         turtle.penup()
         turtle.goto(vlist[0]) #move the pen to the start of polygon coordinate
         while a < len(vlist):
@@ -52,17 +52,8 @@ def polygondraw (blist, vlist):
                 else:
                     drawLine(vlist[a], vlist[a+1],colorfill)
                     a += 1 # move to the next vertex
+        turtle.end_fill(colorfill)
         break
-
-def load_file(file_name):
-    if not os.path.exists(file_name):
-        raise Exception("File cannot be found")
-    
-    with open(file_name, "r") as f:
-        data = f.read()
-
-    return data
-
 
 def parse_data(data):
     lines = data.split("\n")
@@ -131,10 +122,17 @@ while True:
         while True:
             if __name__ == "__main__":
                 filename = input("Enter the filename you wish to import: ")
-                data = load_file(filename)
-                blists, vlists = parse_data(data)
-                draw(blists, vlists)
-
+                try:
+                    with open(filename, "r") as f:
+                        data = f.read()
+                        blists, vlists = parse_data(data)
+                        draw(blists, vlists)
+                        break
+                except FileNotFoundError:
+                    print()
+                    print("Error, file not found, please ensure your file name is correct.")
+                    print()
+        while True:
             print("Choose one of the following options.")
             print("1. Choose another file.")
             print("2. Transform current file.")
@@ -198,7 +196,24 @@ while True:
         print()
         print("Input error, please try again.")
         print()
-        
+    
+    while True:
+        restartopt = input("Would you like to restart? (Y/N): ")
+        restartopt = restartopt.upper()
+
+        if restartopt == "Y":
+            print()
+            print("Program is restarting, clearing all data...")
+            print()
+        elif restartopt == "N":
+            print()
+            print("Thank you for using this program.")
+            break
+
+        else:
+            print()
+            print("Error, please try again.")
+    break    
         
 #transform functions
 
