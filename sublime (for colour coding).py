@@ -1,5 +1,5 @@
 #initialise stage
-
+import os
 import math
 import turtle
 
@@ -54,11 +54,67 @@ def polygondraw (blist, vlist):
                     a += 1 # move to the next vertex
         break
 
+def load_file(file_name):
+    if not os.path.exists(file_name):
+        raise Exception("File cannot be found")
+    
+    with open(file_name, "r") as f:
+        data = f.read()
 
-def extract_data(lines):
-    data = lines.split(":").strip()
-    cleandata = data[1].strip()
-    return (cleandata)
+    return data
+
+
+def parse_data(data):
+    lines = data.split("\n")
+    vlists = []
+    blists = []
+    bstack = []
+    vstack = []
+    is_polygon_data = False
+    is_curve_data = False
+    curve_count = 0
+    for l in lines:
+        # ignore empty lines
+        if len(l) == 0:
+            continue
+        
+        # ! indicate start of polygon
+        if l.find('!') == 0:
+            is_polygon_data = not is_polygon_data
+            if is_polygon_data:
+                if vstack and bstack:
+                    # save polygon and reset stack
+                    vlists.append(vstack)
+                    blists.append(bstack)
+                    vstack = []
+                    bstack = []
+            continue
+        # # indicate the number of curves exists in the polygon
+        elif l.find('#') == 0:
+            is_curve_data = True
+            curve_count = int(l.split(" ")[1])
+            continue
+        
+        # if curve_count == 0 then just skip
+        if curve_count == 0:
+            is_curve_data = False
+
+        if is_polygon_data:
+            v1, v2 = l.split(" ")
+            v1, v2 = float(v1), float(v2)
+            vstack.append((v1,v2))
+        elif is_curve_data:
+            i = int(l)
+            if i >= 0 and i < len(vstack):
+                bstack.append(i)
+            curve_count -= 1
+    
+    return blists, vlists
+
+
+def draw(blists, vlists):
+    for i in range(len(vlists)):
+        polygondraw(blists[i], vlists[i])
 
 prompt = 1
 
@@ -71,7 +127,34 @@ while True:
     
     cond = input("Your selection: ")
     # Manually input data
-    if cond == "1":
+    if cond == "2":
+        while True:
+            if __name__ == "__main__":
+                filename = input("Enter the filename you wish to import: ")
+                data = load_file(filename)
+                blists, vlists = parse_data(data)
+                draw(blists, vlists)
+
+            print("Choose one of the following options.")
+            print("1. Choose another file.")
+            print("2. Transform current file.")
+            print("3. Accept current drawing.")
+                
+            neworend = input("Your selection: ")
+            if neworend == "1":
+                print()
+            elif neworend == "2":
+                break
+            elif neworend == "3":
+                turtle.stamp()
+                turtle.hideturtle()
+                break
+            else:
+                print("Error, please try again.")
+
+            
+
+    elif cond == "1":
         while True:
             
             #manually key in coordinates (from data set)
@@ -110,59 +193,6 @@ while True:
                 clist = vlist
                 blist.clear()
                 vlist.clear()
-
-
-                
-
-                
-        #Import data    
-    elif cond == "2":
-        while True:
-            print("This is to import files with data coordinates only.")
-            print("Ensure that the file being imported only contains the coordinates in float.")
-            infile = input("Enter the datafile you wish to import (Example: Polygon1.txt): ")
-            try:
-                with open(infile, 'r') as file:
-                    lines = file.readlines()
-                    print(lines) #debug
-                    coordlist = extract_data(lines)
-                    print(coordlist) #debug
-                    totalpolygonnumber = 0
-                    if "number of polygons" in lines:
-                        totalpolygonnumber = extract_data(lines)
-                        print(totalpolygonnumber)                    
-                    if "polygon" in lines:
-
-                        if "number of vertices" in lines:
-                            verticesnumber = extract_data(lines)
-                            print(verticesnumber)
-
-                        for i4 in range(0,verticesnumber):
-                            
-                            if "abcdefghijklmnopqrstuvwxyz" not in lines:
-                                coordinates = lines.split()
-                                vlist.append([float(coordinates[0]), float(coordinates[1])])
-                                #end of polygon coordinates
-
-                            else: 
-                                if "number of curves" in lines:
-                                    curvesnumber = extract_data(lines)
-                                    
-                                    if curvesnumber == 0:
-                                        polygondraw(blist, vlist)
-                                    
-                                    else:
-                                        if "Start curve" in lines:
-                                            xcurve = lines.split()
-                                            blist.append(xcurve)
-
-                                        polygondraw(blist, vlist)
-
-
-            except FileNotFoundError:
-                print("File not found, please ensure the file name is correct.")
-
-        file.close()
     #crash prevention        
     else:
         print()
@@ -182,42 +212,41 @@ def scale(factor):
 
 while True:
 
-print("Please pick your option of what you would like to do with your drawing")
-print("1. Transform")
-print("2. Scale")
-print("3. Skew")
-options = input("Enter your selection: ")
-if options == "1":
-    while True:
+    print("Please pick your option of what you would like to do with your drawing")
+    print("1. Transform")
+    print("2. Scale")
+    print("3. Skew")
+    options = input("Enter your selection: ")
+    if options == "1":
+        while True:
 
-        qtransform = input("Input the transformation in the form of X, Y, Rotation (in degrees) (example: 50,40,45): ")
-        if "cancel" in qtransform:
-            break
-        elif "abcdefghijklmnopqrstuvwxyz" in qtransform:
-            print("Error, try again. Ensure only numbers and comma are entered.")
-        else:
-            data2 = qtransform.split(",")
-            transform(data2[0],data2[1],data2[2])
-
-            qloop = input("Would you like to transform again?(Y/N): ")
-            qloop.upper()
-            if qloop == "N":
+            qtransform = input("Input the transformation in the form of X, Y, Rotation (in degrees) (example: 50,40,45): ")
+            if "cancel" in qtransform:
                 break
+            elif "abcdefghijklmnopqrstuvwxyz" in qtransform:
+                print("Error, try again. Ensure only numbers and comma are entered.")
+            else:
+                data2 = qtransform.split(",")
+                transform(data2[0],data2[1],data2[2])
 
-elif options == "2":
-    while True:
-        factor = float(input("How much would you like to scale the drawing?: "))
-        if factor.isnumeric():
-            qscale = scale(factor)
-            break
-        else:
-            print("Sorry, you have selected a wrong value, please enter a number.")
+                qloop = input("Would you like to transform again?(Y/N): ")
+                qloop.upper()
+                if qloop == "N":
+                    break
 
-elif options == "3":
-    while True:
-        
-else:
-    print()
-    print("Error! Please check your selection again")
-    print()
+    elif options == "2":
+        while True:
+            factor = float(input("How much would you like to scale the drawing?: "))
+            if factor.isnumeric():
+                qscale = scale(factor)
+                break
+            else:
+                print("Sorry, you have selected a wrong value, please enter a number.")
+
+    elif options == "3":
+        print()
+    else:
+        print()
+        print("Error! Please check your selection again")
+        print()
 
